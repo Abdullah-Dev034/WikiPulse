@@ -41,7 +41,7 @@ export function TrendingPages({ pages }: { pages: PageCount[] }) {
       {pages.length === 0 ? (
         <EmptyState>No edits in this window yet.</EmptyState>
       ) : (
-        <ol className="divide-y divide-line/60">
+        <ol className="-mr-2 max-h-[34rem] min-h-0 flex-1 divide-y divide-line/60 overflow-y-auto pr-2 lg:h-0 lg:max-h-none">
           {pages.map((page, index) => (
             <TrendingPageItem key={`${page.domain}|${page.title}`} page={page} rank={index + 1} max={max} />
           ))}

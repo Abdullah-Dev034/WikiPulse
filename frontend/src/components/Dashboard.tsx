@@ -54,11 +54,11 @@ export function Dashboard({ createSocket }: { createSocket?: SocketFactory }) {
                 <VandalismPanel items={state.flagged} />
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-              <div className="min-w-0">
+            <div className="grid grid-cols-1 gap-4 lg:h-[36rem] lg:grid-cols-3">
+              <div className="min-w-0 lg:min-h-0">
                 <TrendingPages pages={stats.top_pages} />
               </div>
-              <div className="min-w-0 lg:col-span-2">
+              <div className="min-w-0 lg:col-span-2 lg:min-h-0">
                 <LiveFeed items={state.feed} />
               </div>
             </div>
