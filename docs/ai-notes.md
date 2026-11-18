@@ -69,3 +69,18 @@ Raw notes kept during development; distilled into `AI_LOG.md` before submission.
 - Charts follow a dataviz checklist: one blue for data, status colours only for risk and
   connection state (always with a text label), hover tooltip, hidden table for screen
   readers.
+
+## Phase 4b – UI redesign ("Geeks Evolution" dark theme)
+
+- User iterated through several themes (Geeks palette from geeks.ltd's public CSS, dark
+  green, light professional) and then supplied a detailed redesign brief and palette.
+- Kept the data layer untouched (socket hook, reducer, protocol types); split components
+  into DashboardHeader / ConnectionStatus / WikiFilter / MetricCard / VandalismPanel +
+  VandalismAlert / TrendingPages / LiveFeed + LiveFeedItem / AIInsightPanel.
+- Declined to fabricate numbers the brief's style implied: the only trend shown is edits/min
+  vs the previous minute, computed from real 10 s buckets; the AI panel shows an honest
+  "not enabled" state until Phase 5.
+- Wikidata titles (Q/P/L ids) are labelled as entities, since the stream carries no labels.
+- Screenshot review caught issues the tests did not: the chart rendered blank inside nested
+  flex layout (fixed by absolutely positioning the Recharts container), wrapped timestamps,
+  clipped tags on phones, and an empty block under the feed.

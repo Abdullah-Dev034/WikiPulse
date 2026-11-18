@@ -35,7 +35,10 @@ export function scoredEvent(
     risk: {
       score: category === 'normal' ? 0 : 65,
       category,
-      signals: [],
+      signals:
+        category === 'normal'
+          ? []
+          : [{ code: 'large_removal', description: 'Removed 4,000 bytes (80% of the page)', weight: 35 }],
       reason: category === 'normal' ? '' : 'Removed 4,000 bytes (80% of the page)',
     },
   }

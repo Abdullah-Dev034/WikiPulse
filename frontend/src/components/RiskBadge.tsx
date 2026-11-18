@@ -7,11 +7,11 @@ export function RiskBadge({ risk }: { risk: RiskAssessment }) {
   return (
     <span
       title={risk.reason}
-      className="inline-flex items-center gap-1.5 rounded-md border border-line bg-panel-raised px-2 py-0.5 text-xs text-ink"
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded px-1.5 py-0.5 text-xs font-medium ${suspicious ? 'bg-critical/15 text-critical' : 'bg-warning/15 text-warning'}`}
     >
       <StatusDot tone={suspicious ? 'critical' : 'warning'} />
       {suspicious ? 'Suspicious' : 'Needs review'}
-      <span className="text-muted">{risk.score}</span>
+      <span className="opacity-80">· {risk.score}</span>
     </span>
   )
 }

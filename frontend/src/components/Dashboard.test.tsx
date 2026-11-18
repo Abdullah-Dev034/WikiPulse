@@ -22,7 +22,8 @@ describe('Dashboard', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Connecting…')
   })
 
-  test('renders KPIs, trending pages, the live feed and flagged edits from a snapshot', () => {
+  test('renders KPIs, trending pages, the live feed and flagged edits from a snapshot', async () => {
+    const user = userEvent.setup()
     render(<Dashboard createSocket={fakeSocketFactory} />)
     const flagged = scoredEvent({ id: 'v1', title: 'Blanked page' }, 'suspicious')
 
@@ -46,6 +47,11 @@ describe('Dashboard', () => {
     expect(within(feed).getByText('Python (language)')).toBeInTheDocument()
     const vandalism = screen.getByRole('region', { name: 'Possible vandalism' })
     expect(within(vandalism).getByText('Suspicious')).toBeInTheDocument()
+    expect(within(vandalism).queryByText('Rule-based signals')).not.toBeInTheDocument()
+
+    await user.click(within(vandalism).getByRole('button', { expanded: false }))
+
+    expect(within(vandalism).getByText('Rule-based signals')).toBeInTheDocument()
     expect(within(vandalism).getByText('Removed 4,000 bytes (80% of the page)')).toBeInTheDocument()
   })
 
@@ -64,7 +70,7 @@ describe('Dashboard', () => {
     openWith(snapshot({ wikis: [{ domain: 'de.wikipedia.org', edits: 12 }] }))
 
     await user.selectOptions(screen.getByRole('combobox'), 'de.wikipedia.org')
-    await user.click(screen.getByRole('checkbox', { name: 'Hide bots' }))
+    await user.click(screen.getByRole('switch', { name: 'Hide bots' }))
 
     expect(FakeSocket.instances).toHaveLength(1)
     expect(FakeSocket.latest().sent.slice(-2)).toEqual([
@@ -82,6 +88,37 @@ describe('Dashboard', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Lost connection')
     expect(screen.getByText('77')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Disconnected, retrying…')
+  })
+
+  test('Wikidata entities are labelled as such in trending pages', () => {
+    render(<Dashboard createSocket={fakeSocketFactory} />)
+    openWith(
+      snapshot({
+        stats: stats({ top_pages: [{ domain: 'www.wikidata.org', title: 'Q42', edits: 9 }] }),
+      }),
+    )
+
+    const trending = screen.getByRole('region', { name: 'Trending pages' })
+    expect(within(trending).getByRole('link', { name: 'Q42' })).toHaveAttribute(
+      'href',
+      'https://www.wikidata.org/wiki/Q42',
+    )
+    expect(within(trending).getByText(/Wikidata item/)).toBeInTheDocument()
+  })
+
+  test('feed items expand to show full details', async () => {
+    const user = userEvent.setup()
+    render(<Dashboard createSocket={fakeSocketFactory} />)
+    openWith(snapshot({ feed: [scoredEvent({ title: 'Berlin', comment: 'Fixed a long citation' })] }))
+    const feed = screen.getByRole('region', { name: 'Live feed' })
+
+    await user.click(within(feed).getByRole('button', { name: 'Show edit details' }))
+
+    expect(within(feed).getByText('Summary')).toBeInTheDocument()
+    expect(within(feed).getByRole('button', { name: 'Hide edit details' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
   })
 
   test('empty panels explain themselves', () => {

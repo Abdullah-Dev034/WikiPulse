@@ -11,46 +11,57 @@ interface TooltipProps {
 function ActivityTooltip({ active, payload }: TooltipProps) {
   const point = active ? payload?.[0]?.payload : undefined
   if (!point) return null
+  const start = new Date(new Date(point.end).getTime() - 10_000).toISOString()
   return (
-    <div className="rounded-md border border-line bg-panel-raised px-3 py-2 text-xs shadow-lg">
-      <p className="text-muted">10 s ending {formatTime(point.end)}</p>
-      <p className="font-semibold text-ink">{formatNumber(point.edits)} edits</p>
+    <div className="rounded-md border border-line bg-panel-raised px-3 py-2 text-xs shadow-xl">
+      <p className="text-muted">
+        {formatTime(start)} – {formatTime(point.end)}
+      </p>
+      <p className="mt-0.5 text-sm font-semibold text-ink">{formatNumber(point.edits)} edits</p>
     </div>
   )
 }
 
-const axisTick = { fill: 'var(--color-muted)', fontSize: 11 }
+const axisTick = { fill: 'var(--color-muted)', fontSize: 12 }
 
 export function ActivityChart({ activity }: { activity: ActivityPoint[] }) {
   return (
     <Panel
       title="Edit activity"
-      subtitle="Edits per 10 seconds over the last 5 minutes"
+      subtitle="Edits per 10-second interval, last 5 minutes"
       className="h-full"
     >
       {activity.length === 0 ? (
         <EmptyState>Waiting for edits…</EmptyState>
       ) : (
         <>
-          <div className="min-h-56 flex-1">
+          <div className="relative min-h-64 flex-1">
+            <div className="absolute inset-0">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={activity} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+              <AreaChart data={activity} margin={{ top: 8, right: 4, bottom: 0, left: -12 }}>
                 <defs>
                   <linearGradient id="activity-fill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" style={{ stopColor: 'var(--color-series)', stopOpacity: 0.35 }} />
+                    <stop offset="0%" style={{ stopColor: 'var(--color-series)', stopOpacity: 0.22 }} />
                     <stop offset="100%" style={{ stopColor: 'var(--color-series)', stopOpacity: 0 }} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid vertical={false} stroke="var(--color-line)" />
+                <CartesianGrid vertical={false} stroke="var(--color-line)" strokeDasharray="3 4" />
                 <XAxis
                   dataKey="end"
                   tickFormatter={(value: string) => formatTime(value).slice(0, 5)}
                   interval={5}
                   tick={axisTick}
-                  axisLine={{ stroke: 'var(--color-line)' }}
+                  axisLine={false}
                   tickLine={false}
+                  tickMargin={8}
                 />
-                <YAxis allowDecimals={false} tick={axisTick} axisLine={false} tickLine={false} />
+                <YAxis
+                  allowDecimals={false}
+                  tick={axisTick}
+                  axisLine={false}
+                  tickLine={false}
+                  width={44}
+                />
                 <Tooltip
                   content={<ActivityTooltip />}
                   cursor={{ stroke: 'var(--color-muted)', strokeDasharray: '3 3' }}
@@ -62,11 +73,12 @@ export function ActivityChart({ activity }: { activity: ActivityPoint[] }) {
                   strokeWidth={2}
                   fill="url(#activity-fill)"
                   dot={false}
-                  activeDot={{ r: 4, stroke: 'var(--color-panel)', strokeWidth: 2 }}
+                  activeDot={{ r: 4, fill: 'var(--color-series)', stroke: 'var(--color-panel)', strokeWidth: 2 }}
                   isAnimationActive={false}
                 />
               </AreaChart>
             </ResponsiveContainer>
+            </div>
           </div>
           <table className="sr-only">
             <caption>Edits per 10-second interval</caption>

@@ -10,13 +10,13 @@ export function describeConnection(
   if (connection === 'reconnecting') return { tone: 'critical', label: 'Disconnected, retrying…' }
   switch (upstream) {
     case 'live':
-      return { tone: 'good', label: 'Live' }
+      return { tone: 'live', label: 'Live' }
     case 'replay':
       return { tone: 'neutral', label: 'Replay (recorded data)' }
     case 'reconnecting':
       return { tone: 'warning', label: 'Wikimedia stream reconnecting' }
     case 'stopped':
-      return { tone: 'serious', label: 'Stream stopped' }
+      return { tone: 'warning', label: 'Stream stopped' }
     case 'connecting':
       return { tone: 'neutral', label: 'Connecting to Wikimedia…' }
   }

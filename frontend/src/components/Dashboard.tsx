@@ -5,11 +5,12 @@ import {
   type SocketFactory,
 } from '../hooks/useDashboardSocket'
 import { ActivityChart } from './ActivityChart'
-import { EditFeed } from './EditFeed'
-import { FlaggedEdits } from './FlaggedEdits'
-import { Header } from './Header'
-import { KpiCards } from './KpiCards'
+import { AIInsightPanel } from './AIInsightPanel'
+import { DashboardHeader } from './DashboardHeader'
+import { LiveFeed } from './LiveFeed'
+import { MetricsRow } from './MetricsRow'
 import { TrendingPages } from './TrendingPages'
+import { VandalismPanel } from './VandalismPanel'
 
 const DEFAULT_FILTER: DashboardFilter = { wiki: null, includeBots: false }
 
@@ -19,8 +20,8 @@ export function Dashboard({ createSocket }: { createSocket?: SocketFactory }) {
   const { stats } = state
 
   return (
-    <main className="mx-auto flex max-w-7xl flex-col gap-4 p-4 sm:p-6">
-      <Header
+    <div className="min-h-screen">
+      <DashboardHeader
         filter={filter}
         onFilterChange={setFilter}
         wikis={state.wikis}
@@ -29,31 +30,41 @@ export function Dashboard({ createSocket }: { createSocket?: SocketFactory }) {
         asOf={stats?.as_of ?? null}
       />
 
-      {connection === 'reconnecting' && (
-        <p role="alert" className="rounded-lg border border-critical/50 bg-critical/10 px-4 py-2 text-sm">
-          Lost connection to the WikiPulse server. Showing the last data received while reconnecting.
-        </p>
-      )}
+      <main className="mx-auto flex max-w-[1400px] flex-col gap-4 px-4 py-5 sm:px-6 sm:py-6">
+        {connection === 'reconnecting' && (
+          <p
+            role="alert"
+            className="rounded-md border border-critical/40 bg-critical/10 px-4 py-2.5 text-sm text-ink"
+          >
+            Lost connection to the WikiPulse server. Showing the last data received while reconnecting.
+          </p>
+        )}
 
-      {stats === null ? (
-        <p className="py-24 text-center text-sm text-muted">Waiting for the first update…</p>
-      ) : (
-        <>
-          <KpiCards stats={stats} />
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <div className="min-w-0 lg:col-span-2">
-              <ActivityChart activity={stats.activity} />
+        {stats === null ? (
+          <p className="py-24 text-center text-sm text-muted">Waiting for the first update…</p>
+        ) : (
+          <>
+            <MetricsRow stats={stats} />
+            <AIInsightPanel />
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <div className="min-w-0 lg:col-span-2">
+                <ActivityChart activity={stats.activity} />
+              </div>
+              <div className="min-w-0">
+                <VandalismPanel items={state.flagged} />
+              </div>
             </div>
-            <FlaggedEdits items={state.flagged} />
-          </div>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <TrendingPages pages={stats.top_pages} />
-            <div className="min-w-0 lg:col-span-2">
-              <EditFeed items={state.feed} />
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <div className="min-w-0">
+                <TrendingPages pages={stats.top_pages} />
+              </div>
+              <div className="min-w-0 lg:col-span-2">
+                <LiveFeed items={state.feed} />
+              </div>
             </div>
-          </div>
-        </>
-      )}
-    </main>
+          </>
+        )}
+      </main>
+    </div>
   )
 }
