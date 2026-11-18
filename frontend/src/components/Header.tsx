@@ -21,7 +21,7 @@ export function Header({ filter, onFilterChange, wikis, connection, upstream, as
   return (
     <header className="flex flex-col gap-4 border-b border-line pb-4 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex items-center gap-3">
-        <div aria-hidden className="grid size-9 place-items-center rounded-lg bg-brand font-bold text-white">
+        <div aria-hidden className="grid size-9 place-items-center rounded-lg bg-brand font-bold text-canvas">
           W
         </div>
         <div>

@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { formatNumber, formatTime } from '../lib/format'
 import type { ActivityPoint } from '../types/protocol'
 import { EmptyState, Panel } from './Panel'
@@ -30,11 +30,13 @@ export function ActivityChart({ activity }: { activity: ActivityPoint[] }) {
         <>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={activity}
-                barCategoryGap={2}
-                margin={{ top: 4, right: 4, bottom: 0, left: -16 }}
-              >
+              <AreaChart data={activity} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+                <defs>
+                  <linearGradient id="activity-fill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" style={{ stopColor: 'var(--color-series)', stopOpacity: 0.35 }} />
+                    <stop offset="100%" style={{ stopColor: 'var(--color-series)', stopOpacity: 0 }} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid vertical={false} stroke="var(--color-line)" />
                 <XAxis
                   dataKey="end"
@@ -47,15 +49,19 @@ export function ActivityChart({ activity }: { activity: ActivityPoint[] }) {
                 <YAxis allowDecimals={false} tick={axisTick} axisLine={false} tickLine={false} />
                 <Tooltip
                   content={<ActivityTooltip />}
-                  cursor={{ fill: 'var(--color-panel-raised)' }}
+                  cursor={{ stroke: 'var(--color-muted)', strokeDasharray: '3 3' }}
                 />
-                <Bar
+                <Area
+                  type="monotone"
                   dataKey="edits"
-                  fill="var(--color-series)"
-                  radius={[4, 4, 0, 0]}
+                  stroke="var(--color-series)"
+                  strokeWidth={2}
+                  fill="url(#activity-fill)"
+                  dot={false}
+                  activeDot={{ r: 4, stroke: 'var(--color-panel)', strokeWidth: 2 }}
                   isAnimationActive={false}
                 />
-              </BarChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
           <table className="sr-only">
