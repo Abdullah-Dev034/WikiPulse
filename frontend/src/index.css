@@ -1,27 +1,29 @@
 @import 'tailwindcss';
 
-/* Dark green monitoring theme. Green carries data and the brand accent. Status colours
-   stay separate for risk and connection state and always ship with a text label. */
+/* Light professional theme: white cards on a pale grey canvas, green for data and the
+   brand. Status colours stay separate for risk and connection state and always ship with a
+   text label. */
 @theme {
-  --font-sans: 'Roboto', ui-sans-serif, system-ui, sans-serif;
-  --color-canvas: #0b1410;
-  --color-panel: #111c17;
-  --color-panel-raised: #172620;
-  --color-line: #1f3329;
-  --color-ink: #eef5f0;
-  --color-ink-2: #b9c9bf;
-  --color-muted: #809488;
-  --color-brand: #2fd47a;
-  --color-series: #2fd47a;
-  --color-series-soft: #1f6b45;
-  --color-good: #2fd47a;
-  --color-warning: #fab219;
-  --color-serious: #ec835a;
-  --color-critical: #e5484d;
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --color-canvas: #f5f7f8;
+  --color-panel: #ffffff;
+  --color-panel-raised: #f3f6f7;
+  --color-line: #e7edf0;
+  --color-ink: #263238;
+  --color-ink-2: #46555c;
+  --color-muted: #66767d;
+  --color-brand: #163d35;
+  --color-accent: #19b77a;
+  --color-accent-soft: #e6f6ef;
+  --color-series: #19b77a;
+  --color-good: #19b77a;
+  --color-warning: #e59a00;
+  --color-serious: #e2662f;
+  --color-critical: #d93838;
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {

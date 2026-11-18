@@ -27,7 +27,7 @@ export function EditFeed({ items }: { items: ScoredEvent[] }) {
                     href={event.diff_url ?? `https://${event.domain}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="min-w-0 flex-1 truncate font-medium text-ink hover:underline"
+                    className="min-w-0 flex-1 truncate font-semibold text-ink hover:underline"
                   >
                     {event.title}
                   </a>

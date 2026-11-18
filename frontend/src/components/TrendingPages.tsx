@@ -22,7 +22,7 @@ export function TrendingPages({ pages }: { pages: PageCount[] }) {
                   href={pageUrl(page)}
                   target="_blank"
                   rel="noreferrer"
-                  className="min-w-0 flex-1 truncate text-ink hover:underline"
+                  className="min-w-0 flex-1 truncate font-medium text-ink hover:underline"
                 >
                   {page.title}
                 </a>

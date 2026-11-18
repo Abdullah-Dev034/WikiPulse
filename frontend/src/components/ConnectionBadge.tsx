@@ -13,7 +13,7 @@ export function ConnectionBadge({ connection, upstream }: ConnectionBadgeProps) 
   return (
     <span
       role="status"
-      className="inline-flex items-center gap-2 rounded-full border border-line bg-panel-raised px-3 py-1 text-xs text-ink-2"
+      className="inline-flex items-center gap-2 rounded-full border border-line bg-panel px-3 py-1 shadow-sm text-xs text-ink-2"
     >
       <StatusDot tone={tone} />
       {label}

@@ -11,10 +11,10 @@ export function Panel({ title, subtitle, className = '', children }: PanelProps)
   return (
     <section
       aria-label={title}
-      className={`flex min-w-0 flex-col rounded-xl border border-line bg-panel p-4 ${className}`}
+      className={`flex min-w-0 flex-col rounded-xl border border-line bg-panel p-5 shadow-sm ${className}`}
     >
       <header className="mb-3">
-        <h2 className="text-sm font-semibold text-ink">{title}</h2>
+        <h2 className="text-base font-bold text-brand">{title}</h2>
         {subtitle && <p className="text-xs text-muted">{subtitle}</p>}
       </header>
       {children}
