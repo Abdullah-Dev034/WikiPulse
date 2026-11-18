@@ -1,7 +1,7 @@
 from collections import deque
 from datetime import datetime, timedelta
 
-from app.models import EventFilter, ScoredEvent
+from app.models import EventFilter, RiskCategory, ScoredEvent
 
 ALL_EVENTS = EventFilter()
 
@@ -54,10 +54,14 @@ class EventStore:
             if item.event.timestamp > cutoff and event_filter.matches(item.event)
         ]
 
-    def latest(self, limit: int, event_filter: EventFilter = ALL_EVENTS) -> list[ScoredEvent]:
+    def latest(
+        self, limit: int, event_filter: EventFilter = ALL_EVENTS, flagged_only: bool = False
+    ) -> list[ScoredEvent]:
         """Most recently received events that match the filter, newest first."""
         result: list[ScoredEvent] = []
         for item in reversed(self._events):
+            if flagged_only and item.risk.category is RiskCategory.NORMAL:
+                continue
             if event_filter.matches(item.event):
                 result.append(item)
                 if len(result) == limit:

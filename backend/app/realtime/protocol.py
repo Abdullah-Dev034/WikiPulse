@@ -24,6 +24,7 @@ class Snapshot(BaseModel):
     stats: DashboardStats
     wikis: list[WikiCount]
     feed: list[ScoredEvent]
+    flagged: list[ScoredEvent]
     upstream: UpstreamState
 
 

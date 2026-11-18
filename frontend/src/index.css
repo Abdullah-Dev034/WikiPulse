@@ -1,5 +1,28 @@
 @import 'tailwindcss';
 
+/* Dark monitoring theme. Data marks use one blue; status colours are reserved for risk
+   and connection state and always ship with a label. */
+@theme {
+  --color-canvas: #0f1012;
+  --color-panel: #17181a;
+  --color-panel-raised: #1f2023;
+  --color-line: #2a2b2e;
+  --color-ink: #f0efec;
+  --color-ink-2: #c3c2b7;
+  --color-muted: #8d8c85;
+  --color-series: #3987e5;
+  --color-series-soft: #1c5cab;
+  --color-good: #0ca30c;
+  --color-warning: #fab219;
+  --color-serious: #ec835a;
+  --color-critical: #d03b3b;
+}
+
+html {
+  color-scheme: dark;
+}
+
 body {
-  @apply bg-slate-950 text-slate-100 antialiased;
+  @apply bg-canvas text-ink antialiased;
+  font-feature-settings: 'tnum';
 }

@@ -166,3 +166,15 @@ def test_bot_filter_excludes_bot_edits_everywhere() -> None:
     assert stats.edits_last_5_minutes == 1
     assert [page.title for page in stats.top_pages] == ["Human page"]
     assert [w.edits for w in wiki_activity(store, include_bots=False)] == [1]
+
+
+def test_latest_can_return_only_flagged_edits() -> None:
+    store = store_with(
+        scored(title="fine"),
+        scored(title="check", category=RiskCategory.NEEDS_REVIEW),
+        scored(title="bad", category=RiskCategory.SUSPICIOUS),
+    )
+
+    titles = [item.event.title for item in store.latest(5, flagged_only=True)]
+
+    assert titles == ["bad", "check"]
