@@ -4,11 +4,12 @@ from datetime import timedelta
 from app.models import (
     ActivityPoint,
     DashboardStats,
+    EventFilter,
     PageCount,
     RiskCategory,
     WikiCount,
 )
-from app.processing.store import EventStore
+from app.processing.store import ALL_EVENTS, EventStore
 
 MINUTE = timedelta(minutes=1)
 TRENDING_WINDOW = timedelta(minutes=5)
@@ -16,8 +17,8 @@ ACTIVITY_BUCKET = timedelta(seconds=10)
 TOP_PAGES = 10
 
 
-def build_stats(store: EventStore, domain: str | None = None) -> DashboardStats:
-    """Rolling statistics at the store's current event time, optionally for one wiki.
+def build_stats(store: EventStore, event_filter: EventFilter = ALL_EVENTS) -> DashboardStats:
+    """Rolling statistics at the store's current event time for the events the filter matches.
 
     Windows are half-open: (now - span, now].
     """
@@ -25,7 +26,7 @@ def build_stats(store: EventStore, domain: str | None = None) -> DashboardStats:
     if now is None:
         return DashboardStats(
             as_of=None,
-            wiki=domain,
+            filter=event_filter,
             edits_last_minute=0,
             edits_last_5_minutes=0,
             active_wikis=0,
@@ -34,7 +35,7 @@ def build_stats(store: EventStore, domain: str | None = None) -> DashboardStats:
             activity=[],
         )
 
-    recent = store.since(now - TRENDING_WINDOW, domain)
+    recent = store.since(now - TRENDING_WINDOW, event_filter)
     minute_cutoff = now - MINUTE
     pages = Counter((item.event.domain, item.event.title) for item in recent)
     top = sorted(pages.items(), key=lambda entry: (-entry[1], entry[0]))[:TOP_PAGES]
@@ -48,7 +49,7 @@ def build_stats(store: EventStore, domain: str | None = None) -> DashboardStats:
 
     return DashboardStats(
         as_of=now,
-        wiki=domain,
+        filter=event_filter,
         edits_last_minute=sum(1 for item in recent if item.event.timestamp > minute_cutoff),
         edits_last_5_minutes=len(recent),
         active_wikis=len({item.event.domain for item in recent}),
@@ -66,11 +67,12 @@ def build_stats(store: EventStore, domain: str | None = None) -> DashboardStats:
     )
 
 
-def wiki_activity(store: EventStore) -> list[WikiCount]:
+def wiki_activity(store: EventStore, include_bots: bool = True) -> list[WikiCount]:
     """Edits per wiki in the trending window, busiest first. Used to populate the filter."""
     if store.now is None:
         return []
-    counts = Counter(item.event.domain for item in store.since(store.now - TRENDING_WINDOW))
+    recent = store.since(store.now - TRENDING_WINDOW, EventFilter(include_bots=include_bots))
+    counts = Counter(item.event.domain for item in recent)
     return [
         WikiCount(domain=domain, edits=edits)
         for domain, edits in sorted(counts.items(), key=lambda entry: (-entry[1], entry[0]))

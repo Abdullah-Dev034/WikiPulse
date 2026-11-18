@@ -1,7 +1,9 @@
 from collections import deque
 from datetime import datetime, timedelta
 
-from app.models import ScoredEvent
+from app.models import EventFilter, ScoredEvent
+
+ALL_EVENTS = EventFilter()
 
 DEFAULT_RETENTION = timedelta(minutes=5)
 
@@ -44,19 +46,19 @@ class EventStore:
         self._evict()
         return True
 
-    def since(self, cutoff: datetime, domain: str | None = None) -> list[ScoredEvent]:
-        """Events with timestamp strictly after cutoff, optionally for one wiki."""
+    def since(self, cutoff: datetime, event_filter: EventFilter = ALL_EVENTS) -> list[ScoredEvent]:
+        """Events with timestamp strictly after cutoff that match the filter."""
         return [
             item
             for item in self._events
-            if item.event.timestamp > cutoff and (domain is None or item.event.domain == domain)
+            if item.event.timestamp > cutoff and event_filter.matches(item.event)
         ]
 
-    def latest(self, limit: int, domain: str | None = None) -> list[ScoredEvent]:
-        """Most recently received events, newest first."""
+    def latest(self, limit: int, event_filter: EventFilter = ALL_EVENTS) -> list[ScoredEvent]:
+        """Most recently received events that match the filter, newest first."""
         result: list[ScoredEvent] = []
         for item in reversed(self._events):
-            if domain is None or item.event.domain == domain:
+            if event_filter.matches(item.event):
                 result.append(item)
                 if len(result) == limit:
                     break

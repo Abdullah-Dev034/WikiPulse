@@ -1,4 +1,4 @@
-from app.models import RiskCategory, ScoredEvent
+from app.models import EventFilter, RiskCategory, ScoredEvent
 from app.processing.stats import build_stats, wiki_activity
 from app.processing.store import EventStore
 from tests.factories import at, scored
@@ -86,9 +86,9 @@ def test_wiki_filter_applies_to_every_statistic() -> None:
         scored(domain="en.wikipedia.org", title="C", seconds=300),
     )
 
-    stats = build_stats(store, domain="de.wikipedia.org")
+    stats = build_stats(store, EventFilter(wiki="de.wikipedia.org"))
 
-    assert stats.wiki == "de.wikipedia.org"
+    assert stats.filter.wiki == "de.wikipedia.org"
     assert stats.edits_last_minute == 1
     assert stats.edits_last_5_minutes == 1
     assert stats.active_wikis == 1
@@ -149,6 +149,20 @@ def test_latest_filters_by_wiki_newest_first() -> None:
         scored(domain="en.wikipedia.org", title="new"),
     )
 
-    titles = [item.event.title for item in store.latest(5, domain="en.wikipedia.org")]
+    titles = [item.event.title for item in store.latest(5, EventFilter(wiki="en.wikipedia.org"))]
 
     assert titles == ["new", "old"]
+
+
+def test_bot_filter_excludes_bot_edits_everywhere() -> None:
+    store = store_with(
+        scored(title="Bot page", bot=True),
+        scored(title="Bot page", bot=True),
+        scored(title="Human page"),
+    )
+
+    stats = build_stats(store, EventFilter(include_bots=False))
+
+    assert stats.edits_last_5_minutes == 1
+    assert [page.title for page in stats.top_pages] == ["Human page"]
+    assert [w.edits for w in wiki_activity(store, include_bots=False)] == [1]

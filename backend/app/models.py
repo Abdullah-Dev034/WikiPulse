@@ -41,6 +41,20 @@ class WikiEvent(BaseModel):
         return self.new_length - self.old_length
 
 
+class EventFilter(BaseModel):
+    """What a dashboard viewer is looking at: one wiki or all, with or without bot edits."""
+
+    model_config = ConfigDict(frozen=True)
+
+    wiki: str | None = None
+    include_bots: bool = True
+
+    def matches(self, event: WikiEvent) -> bool:
+        return (self.wiki is None or event.domain == self.wiki) and (
+            self.include_bots or not event.bot
+        )
+
+
 class RiskCategory(StrEnum):
     NORMAL = "normal"
     NEEDS_REVIEW = "needs_review"
@@ -89,7 +103,7 @@ class ActivityPoint(BaseModel):
 
 class DashboardStats(BaseModel):
     as_of: datetime | None
-    wiki: str | None
+    filter: EventFilter
     edits_last_minute: int
     edits_last_5_minutes: int
     active_wikis: int
