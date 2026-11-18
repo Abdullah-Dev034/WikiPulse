@@ -23,12 +23,16 @@ const axisTick = { fill: 'var(--color-muted)', fontSize: 11 }
 
 export function ActivityChart({ activity }: { activity: ActivityPoint[] }) {
   return (
-    <Panel title="Edit activity" subtitle="Edits per 10 seconds over the last 5 minutes">
+    <Panel
+      title="Edit activity"
+      subtitle="Edits per 10 seconds over the last 5 minutes"
+      className="h-full"
+    >
       {activity.length === 0 ? (
         <EmptyState>Waiting for edits…</EmptyState>
       ) : (
         <>
-          <div className="h-56">
+          <div className="min-h-56 flex-1">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={activity} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
                 <defs>

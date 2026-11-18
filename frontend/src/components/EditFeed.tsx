@@ -10,7 +10,7 @@ function Tag({ children }: { children: string }) {
 
 export function EditFeed({ items }: { items: ScoredEvent[] }) {
   return (
-    <Panel title="Live feed" subtitle="Most recent edits, newest first">
+    <Panel title="Live feed" subtitle="Most recent edits, newest first" className="h-full">
       {items.length === 0 ? (
         <EmptyState>No edits match the current filter yet.</EmptyState>
       ) : (
