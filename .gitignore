@@ -1,0 +1,19 @@
+# Repo-wide rules only. Project rules live in backend/.gitignore and frontend/.gitignore.
+
+# Secrets (safety net for any .env outside the two projects)
+.env
+.env.*
+!.env.example
+
+# Assessment brief (private to the hiring process, not part of the deliverable)
+Technical Assessment*.pdf
+assessment.txt
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Real stream recordings contain real editors' usernames and IDs; keep them local.
+data/recorded_*.jsonl
