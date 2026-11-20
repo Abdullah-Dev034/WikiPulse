@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import router
 from app.config import Settings, get_settings
+from app.ingestion.live import live_events
 from app.ingestion.replay import replay_events
 from app.pipeline import Pipeline
 
@@ -16,10 +17,7 @@ logger = logging.getLogger(__name__)
 
 def _event_source(settings: Settings, pipeline: Pipeline) -> AsyncIterator[str]:
     if settings.stream_source == "live":
-        raise RuntimeError(
-            "Live ingestion is not wired yet (waiting for the stream_client.py starter file). "
-            "Set STREAM_SOURCE=replay."
-        )
+        return live_events(settings.stream_url, settings.user_agent, pipeline.set_upstream)
     pipeline.set_upstream("replay")
     return replay_events(settings.replay_file, settings.replay_speed, settings.replay_loop)
 

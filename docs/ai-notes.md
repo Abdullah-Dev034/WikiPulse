@@ -111,3 +111,18 @@ Raw notes kept during development; distilled into `AI_LOG.md` before submission.
   53%. Reverted. Real cause: Starlette's TestClient cancels the server task right after
   sending the disconnect. Test now closes and waits for the server to drop the client:
   300/300 passing.
+
+## Phase 6b – Live EventStreams client (own implementation)
+
+- No `stream_client.py` arrived, so wrote `app/ingestion/live.py` from the EventStreams
+  docs: small SSE parser, exponential backoff with jitter, `Retry-After`, `Last-Event-ID`
+  resume, upstream state for the dashboard. Tested with `httpx.MockTransport`.
+- First real run: **HTTP 403** "Please respect our robot policy". Same User-Agent through
+  curl got 200; through httpx, 403 — Wikimedia evidently classifies Python clients and
+  then enforces its User-Agent policy (contact URL/email required). The earlier recording
+  (Phase 2) had worked with the same generic UA, so enforcement changed since then.
+- Did not put the candidate's GitHub URL or email into requests to test it: that is
+  personal data sent to a third party and needs their OK. Instead: 401/403 now stops the
+  client (no retry hammering) with a clear log line, `USER_AGENT` is documented in
+  `.env.example`, and the parser was verified on 5 s of real stream bytes captured with
+  curl and replayed through a mock transport (151 events, 0 malformed, resume id correct).
