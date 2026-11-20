@@ -121,6 +121,21 @@ describe('Dashboard', () => {
     )
   })
 
+  test('markup in edit data is shown as text, never rendered (sample_events.jsonl case)', () => {
+    const xss = '<img src=x onerror=alert("xss")> Minor formatting changes.'
+    const { container } = render(<Dashboard createSocket={fakeSocketFactory} />)
+    openWith(
+      snapshot({
+        feed: [scoredEvent({ title: '<script>alert(1)</script>', comment: xss })],
+        flagged: [scoredEvent({ title: 'Climate change', comment: xss }, 'needs_review')],
+      }),
+    )
+
+    expect(screen.getAllByText(xss).length).toBeGreaterThan(0)
+    expect(screen.getByText('<script>alert(1)</script>')).toBeInTheDocument()
+    expect(container.querySelector('img, script')).toBeNull()
+  })
+
   test('empty panels explain themselves', () => {
     render(<Dashboard createSocket={fakeSocketFactory} />)
     openWith()

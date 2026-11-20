@@ -1,6 +1,6 @@
 import json
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
 import pytest
@@ -35,9 +35,13 @@ def client(tmp_path: Path) -> Iterator[TestClient]:
 
 
 def wait_for_replay(client: TestClient) -> None:
-    deadline = time.monotonic() + 5
-    while client.get("/api/health").json()["upstream"] != "stopped":
-        assert time.monotonic() < deadline, "replay did not finish"
+    wait_until(lambda: client.get("/api/health").json()["upstream"] == "stopped")
+
+
+def wait_until(condition: Callable[[], bool], timeout: float = 5) -> None:
+    deadline = time.monotonic() + timeout
+    while not condition():
+        assert time.monotonic() < deadline, "condition not met in time"
         time.sleep(0.01)
 
 
@@ -83,3 +87,8 @@ def test_websocket_sends_snapshot_then_live_stats_and_honours_subscribe(
             "include_bots": False,
         }
         assert message["data"]["stats"]["edits_last_5_minutes"] == 1
+
+        # TestClient cancels the server task as soon as the block exits; let the server
+        # finish handling the disconnect first so the test does not race its own teardown.
+        ws.close()
+        wait_until(lambda: client.get("/api/health").json()["clients"] == 0)

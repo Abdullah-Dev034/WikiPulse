@@ -10,6 +10,18 @@ ARTICLE_NAMESPACE = 0
 # Logged-out editors on Wikimedia wikis now get temporary accounts such as "~2026-55293-33".
 TEMPORARY_ACCOUNT = re.compile(r"^~\d{4}-\d+-\d+$")
 REVERT_COMMENT = re.compile(r"\b(revert(ed|ing)?|undid revision|undo|rvv?|rollback)\b", re.I)
+# Edit summaries are plain text, so HTML or script markup in one is never legitimate.
+MARKUP_IN_SUMMARY = re.compile(
+    r"<\s*/?\s*(script|img|iframe|svg|object|embed|style|a)\b|\bon[a-z]+\s*=|javascript:", re.I
+)
+# Text addressed to an automated reviewer (prompt injection) rather than to editors.
+INSTRUCTION_IN_SUMMARY = re.compile(
+    r"\b(ignore|disregard)\s+(all\s+)?(previous|prior|above)\s+instructions\b"
+    r"|\bsystem\s+(override|prompt|instructions?)\b"
+    r"|\breveal\s+your\b"
+    r"|\bmark\s+(every|this|all)\s+edits?\s+as\s+safe\b",
+    re.I,
+)
 DEFAULT_SUSPICIOUS_TERMS = (
     "lol",
     "lmao",
@@ -48,6 +60,8 @@ class RiskConfig:
     weight_blanking: int = 50
     weight_large_removal: int = 35
     weight_suspicious_comment: int = 30
+    weight_instruction_in_summary: int = 40
+    weight_markup_in_summary: int = 30
     weight_rapid_edits: int = 20
     weight_unregistered: int = 15
     weight_contested_page: int = 15
@@ -166,16 +180,33 @@ class VandalismScorer:
                     weight=self._config.weight_missing_summary,
                 )
             ]
-        match = self._suspicious_comment.search(comment)
-        if match is None:
-            return []
-        return [
-            RiskSignal(
-                code="suspicious_comment",
-                description=f'Edit summary contains "{match.group(0)}"',
-                weight=self._config.weight_suspicious_comment,
+        signals = []
+        if INSTRUCTION_IN_SUMMARY.search(comment):
+            signals.append(
+                RiskSignal(
+                    code="instruction_in_summary",
+                    description="Edit summary contains instructions aimed at automated reviewers",
+                    weight=self._config.weight_instruction_in_summary,
+                )
             )
-        ]
+        if MARKUP_IN_SUMMARY.search(comment):
+            signals.append(
+                RiskSignal(
+                    code="markup_in_summary",
+                    description="Edit summary contains HTML or script markup",
+                    weight=self._config.weight_markup_in_summary,
+                )
+            )
+        match = self._suspicious_comment.search(comment)
+        if match is not None:
+            signals.append(
+                RiskSignal(
+                    code="suspicious_comment",
+                    description=f'Edit summary contains "{match.group(0)}"',
+                    weight=self._config.weight_suspicious_comment,
+                )
+            )
+        return signals
 
     def _assessment(self, signals: list[RiskSignal]) -> RiskAssessment:
         score = min(100, sum(signal.weight for signal in signals))

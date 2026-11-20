@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from app.ingestion.replay import replay_events
-from tests.factories import raw_event
+from tests.factories import at, raw_event
 
 
 def write_recording(path: Path, count: int) -> Path:
@@ -53,3 +53,44 @@ async def test_out_of_order_recording_only_waits_when_time_moves_forward(
 
     assert len(yielded) == len(order)
     assert sleeps == [1.0, 1.0]
+
+
+async def test_millisecond_timestamps_do_not_stall_pacing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    sleeps: list[float] = []
+
+    async def fake_sleep(seconds: float) -> None:
+        sleeps.append(seconds)
+
+    monkeypatch.setattr("app.ingestion.replay.asyncio.sleep", fake_sleep)
+    events = [raw_event(event_id=f"m{n}", seconds=n) for n in range(4)]
+    events[1]["timestamp"] *= 1000  # one event in milliseconds, as in sample_events.jsonl
+    recording = tmp_path / "events.jsonl"
+    recording.write_text("\n".join(json.dumps(event) for event in events), encoding="utf-8")
+
+    yielded = [line async for line in replay_events(recording, speed=1, loop=False)]
+
+    assert len(yielded) == 4
+    assert sleeps == [1.0, 1.0, 1.0]
+
+
+async def test_looping_shifts_events_with_millisecond_or_missing_timestamps(
+    tmp_path: Path,
+) -> None:
+    millis = raw_event(event_id="ms", seconds=1)
+    millis["timestamp"] *= 1000
+    no_timestamp = raw_event(event_id="dt-only", seconds=2)
+    del no_timestamp["timestamp"]
+    recording = tmp_path / "events.jsonl"
+    recording.write_text(f"{json.dumps(millis)}\n{json.dumps(no_timestamp)}", encoding="utf-8")
+    source = replay_events(recording, speed=0, loop=True)
+
+    first = [json.loads(await anext(source)) for _ in range(2)]
+    second = [json.loads(await anext(source)) for _ in range(2)]
+    await source.aclose()
+
+    span = 2  # seconds 1..2 inclusive
+    assert second[0]["timestamp"] == first[0]["timestamp"] // 1000 + span
+    assert second[1]["timestamp"] == int(at(2).timestamp()) + span
+    assert [event["meta"]["id"] for event in second] == ["ms~1", "dt-only~1"]

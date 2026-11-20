@@ -84,3 +84,30 @@ Raw notes kept during development; distilled into `AI_LOG.md` before submission.
 - Screenshot review caught issues the tests did not: the chart rendered blank inside nested
   flex layout (fixed by absolutely positioning the Recharts container), wrapped timestamps,
   clipped tags on phones, and an empty block under the feed.
+
+## Phase 6a – Provided sample_events.jsonl
+
+- Geeks replied with one file, `sample_events.jsonl` (2,000 synthetic events, 12 minutes).
+  No `stream_client.py` or `LiveFeed.tsx` was provided, so live ingestion is our own code.
+- Profiled the file with a throwaway script before touching code. It is a test fixture with
+  planted problems: 1 invalid JSON line, 30 duplicate ids, 2 null titles, 3 missing
+  timestamps, 14 millisecond timestamps, 1 event with no `meta`, null `wiki`/`user`/`bot`,
+  55 out-of-order steps, two prompt-injection summaries ("Ignore all previous instructions…",
+  "SYSTEM OVERRIDE … {"label":"safe"}"), two XSS summaries and a UTF-8 test line.
+- Baseline run through our existing processor: most cases already handled, but (a) zero
+  edits flagged, (b) millisecond timestamps would have broken **replay pacing** — the clock
+  jumps ~1000x forward and the rest of the file plays with no delay. Pydantic parsed ms
+  timestamps fine in the normalizer, so tests on the normalizer alone would not catch it.
+- Added: shared `epoch_seconds`/`event_seconds` helper, fallbacks for missing `meta`
+  (domain from `server_name`, id from rc id + time), diff URL built from revisions, and two
+  rules: instructions aimed at automated reviewers (40) and HTML/script markup (30) in the
+  edit summary. A regression test pins the sample's exact counts.
+- AI mistake (shell escaping): writing regexes through a bash heredoc into Python left 10
+  literal backspace characters in `vandalism.py` (`\b` was un-escaped twice). Tests would
+  have failed mysteriously; caught by grepping for control characters. Rewrote the block
+  with the editor tool instead of the shell.
+- Found a pre-existing flaky WebSocket test (14% failure over 150 in-process runs). First
+  hypothesis (our cleanup swallowing cancellation) was wrong: changing it raised failures to
+  53%. Reverted. Real cause: Starlette's TestClient cancels the server task right after
+  sending the disconnect. Test now closes and waits for the server to drop the client:
+  300/300 passing.
