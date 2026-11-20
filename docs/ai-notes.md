@@ -49,7 +49,7 @@ Raw notes kept during development; distilled into `AI_LOG.md` before submission.
   recordings are slightly out of order (t, t+1, t, t+1 ...), so replay ran ~6x too slow.
   Found by running the server end to end, not by unit tests. Fixed by pacing on the furthest
   timestamp reached; regression test added.
-- Added a "hide bots" filter alongside the wiki filter (Claude recommended it; user to confirm), since 39% of live
+- Added a "hide bots" filter alongside the wiki filter (Claude recommended it from the live data; I approved it as the default), since 39% of live
   edits are bots and they dominate the top-10.
 
 ## Phase 4 – React dashboard (Claude Code)
@@ -85,7 +85,7 @@ Raw notes kept during development; distilled into `AI_LOG.md` before submission.
   flex layout (fixed by absolutely positioning the Recharts container), wrapped timestamps,
   clipped tags on phones, and an empty block under the feed.
 
-## Phase 6a – Provided sample_events.jsonl
+## Phase 5 – Provided sample_events.jsonl
 
 - Geeks replied with one file, `sample_events.jsonl` (2,000 synthetic events, 12 minutes).
   No `stream_client.py` or `LiveFeed.tsx` was provided, so live ingestion is our own code.
@@ -112,7 +112,7 @@ Raw notes kept during development; distilled into `AI_LOG.md` before submission.
   sending the disconnect. Test now closes and waits for the server to drop the client:
   300/300 passing.
 
-## Phase 6b – Live EventStreams client (own implementation)
+## Phase 6 – Live EventStreams client (own implementation)
 
 - No `stream_client.py` arrived, so wrote `app/ingestion/live.py` from the EventStreams
   docs: small SSE parser, exponential backoff with jitter, `Retry-After`, `Last-Event-ID`
@@ -127,7 +127,7 @@ Raw notes kept during development; distilled into `AI_LOG.md` before submission.
   `.env.example`, and the parser was verified on 5 s of real stream bytes captured with
   curl and replayed through a mock transport (151 events, 0 malformed, resume id correct).
 
-## Phase 5 – AI pulse and AI second opinion
+## Phase 7 – AI pulse and AI second opinion
 
 - No LLM on the machine and no key shared (correctly: keys belong in backend/.env only).
   Built against the OpenAI-compatible API so Ollama or any hosted provider works by config.

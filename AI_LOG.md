@@ -7,9 +7,43 @@
   priorities and the constraints. It wrote code and tests, ran them, and checked the real page
   with headless-browser screenshots. I reviewed the changes and told it what to change.
 
-I worked the way I would at work. The AI did the typing and the first drafts. I decided what
-was in scope, and nothing counted as done until it ran: tests, the real stream, or a screenshot.
 The rough notes behind this log are in [docs/ai-notes.md](docs/ai-notes.md).
+
+## How I worked: human-directed, AI-assisted
+
+I owned the direction and the decisions. The AI tools drafted and executed.
+
+- **Before any code:** I worked through the brief with ChatGPT and had it propose an
+  architecture. I compared options and chose a modular monolith with event-time windows and
+  rule-based flags. I wrote the constraints the implementation had to follow: priorities,
+  no over-engineering, no invented data, and no secrets in prompts or the repo.
+- **During implementation:** I gave Claude Code one feature at a time. I treated what it wrote
+  as a proposal. I reviewed the result, asked for changes, and rejected suggestions that
+  conflicted with the design or failed checks. The examples below show where that mattered.
+- **What counted as done:** tests and lint passing, regression tests for every bug we found,
+  and checks against real behaviour. That meant the live stream, a full replay of the provided
+  sample, and the page in a real browser. AI saying "it works" didn't count.
+- **I'm accountable for the result.** Every design choice in the README is one I can explain
+  and defend.
+
+## Git workflow
+
+I created the GitHub repository first. I worked in feature branches named
+`Abdullah/<feature>` that merge into `develop`, and `develop` merges into `main` for
+submission. Each branch is one reviewable step:
+
+| Branch | Scope |
+| --- | --- |
+| `Abdullah/scaffold` | Project skeleton, tooling, CI-style checks |
+| `Abdullah/rolling-stats` | Normalising, dedupe, event-time windows, risk rules |
+| `Abdullah/websocket-broadcast` | WebSocket hub, replay source, snapshot/event consistency |
+| `Abdullah/dashboard` | React dashboard and UI redesign |
+| `Abdullah/sample-data` | Hardening against the provided sample's edge cases |
+| `Abdullah/live-stream` | Wikimedia SSE client |
+| `Abdullah/ai-insights` | AI pulse and AI second opinion |
+| `Abdullah/docs` | README and this log |
+
+Commit messages say what changed and why, so each decision can be traced in the history.
 
 ## Examples
 
