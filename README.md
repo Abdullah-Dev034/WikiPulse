@@ -48,10 +48,11 @@ docker run -p 7860:7860 wikipulse-api        # add -e STREAM_SOURCE=live -e USER
 
 The frontend is a static build on Vercel; set `VITE_WS_URL=wss://<backend-host>/ws` at build
 time. The backend needs a host that keeps a process running (WebSockets, a long-lived stream
-connection, in-memory state), which serverless platforms such as Vercel don't provide. The image
-is ready for container hosts such as Render or Fly.io. The free tiers I tried needed a payment
-card or had no CPU quota, so for demos the backend runs locally behind a Cloudflare quick tunnel
-(`cloudflared tunnel --url http://localhost:8000`).
+connection, in-memory state), which serverless platforms such as Vercel don't provide. The live
+demo's backend runs this Docker image on EthioDeploy (free tier: health check `/api/health`,
+port from `PORT`, settings as environment variables). On a free tier the backend may take a
+moment to wake up. Any container host works the same way (Render, Fly.io); without one, run it
+locally behind a tunnel (`cloudflared tunnel --url http://localhost:8000`).
 
 ### Data source
 
@@ -228,7 +229,7 @@ stale elements and fixed sleeps are the usual causes of flaky Selenium tests.
 | --- | --- |
 | Docker / docker-compose | Done (see above) |
 | One end-to-end UI test | Done: Selenium + C# |
-| Deployed live demo | Frontend deployed on Vercel. The backend image is ready, but the free hosts I tried needed a card or had no CPU quota, so for demos the backend runs locally behind a Cloudflare tunnel |
+| Deployed live demo | Done: frontend on Vercel, backend as the Docker image on EthioDeploy |
 | Ingestion in a Go service | Not done, by choice (see below) |
 
 **Why no Go service.** Ingestion is I/O-bound. One asyncio task handles the live stream
