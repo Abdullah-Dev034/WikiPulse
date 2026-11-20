@@ -18,10 +18,13 @@ class Settings(BaseSettings):
 
     broadcast_interval_seconds: float = 1.0
 
+    # AI is optional: with no reachable model the dashboard says so and everything else works.
+    ai_enabled: bool = True
     llm_base_url: str = "http://localhost:11434/v1"
     llm_model: str = "llama3.2:3b"
     llm_api_key: SecretStr = SecretStr("")
     pulse_interval_seconds: int = 45
+    review_interval_seconds: float = 2.0
 
     cors_origins: list[str] = ["http://localhost:5173"]
 

@@ -4,6 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from app.ai.schemas import AIReview, PulseSummary
 from app.models import DashboardStats, EventFilter, ScoredEvent, WikiCount
 
 UpstreamState = Literal["connecting", "live", "reconnecting", "replay", "stopped"]
@@ -26,6 +27,8 @@ class Snapshot(BaseModel):
     feed: list[ScoredEvent]
     flagged: list[ScoredEvent]
     upstream: UpstreamState
+    pulse: PulseSummary = PulseSummary(status="disabled")
+    ai_reviews: list[AIReview] = []
 
 
 class StatsPayload(BaseModel):
@@ -55,3 +58,13 @@ class StatsMessage(BaseModel):
 class StatusMessage(BaseModel):
     type: Literal["status"] = "status"
     data: UpstreamStatus
+
+
+class PulseMessage(BaseModel):
+    type: Literal["pulse"] = "pulse"
+    data: PulseSummary
+
+
+class AIReviewMessage(BaseModel):
+    type: Literal["ai_review"] = "ai_review"
+    data: AIReview

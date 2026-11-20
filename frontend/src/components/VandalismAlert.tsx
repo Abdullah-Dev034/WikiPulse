@@ -1,11 +1,17 @@
-import { ChevronDown, ExternalLink } from 'lucide-react'
+import { ChevronDown, ExternalLink, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { formatTime, shortWiki } from '../lib/format'
 import { describePage } from '../lib/pages'
-import type { ScoredEvent } from '../types/protocol'
+import type { AIReview, ScoredEvent, Verdict } from '../types/protocol'
 import { RiskBadge } from './RiskBadge'
 
-export function VandalismAlert({ item }: { item: ScoredEvent }) {
+const VERDICT_LABELS: Record<Verdict, string> = {
+  likely_vandalism: 'likely vandalism',
+  unclear: 'unclear',
+  likely_fine: 'likely fine',
+}
+
+export function VandalismAlert({ item, review }: { item: ScoredEvent; review?: AIReview }) {
   const { event, risk } = item
   const [open, setOpen] = useState(false)
   const page = describePage(event.domain, event.title)
@@ -26,6 +32,12 @@ export function VandalismAlert({ item }: { item: ScoredEvent }) {
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-2">
             <RiskBadge risk={risk} />
+            {review && (
+              <span className="inline-flex items-center gap-1 rounded bg-panel-raised px-1.5 py-0.5 text-xs text-ink-2">
+                <Sparkles aria-hidden className="size-3 text-accent" />
+                AI: {VERDICT_LABELS[review.verdict]}
+              </span>
+            )}
             {page.kind && <span className="text-xs text-muted">{page.kind}</span>}
           </span>
           <span className="mt-1 block truncate text-sm font-semibold text-ink">{page.name}</span>
@@ -55,6 +67,21 @@ export function VandalismAlert({ item }: { item: ScoredEvent }) {
               ))}
             </ul>
           </div>
+          {review && (
+            <div>
+              <p className="text-xs font-medium tracking-wide text-muted uppercase">
+                AI second opinion · advisory
+              </p>
+              <p className="mt-1.5 text-ink-2">
+                <span className="font-medium text-ink">{VERDICT_LABELS[review.verdict]}</span>
+                {' — '}
+                {review.reason}
+              </p>
+              <p className="mt-1 text-xs text-muted">
+                From {review.model}, using metadata only. It does not change the rule-based flag.
+              </p>
+            </div>
+          )}
           {event.diff_url && (
             <a
               href={event.diff_url}

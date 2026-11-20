@@ -1,9 +1,15 @@
 import { Info } from 'lucide-react'
-import type { ScoredEvent } from '../types/protocol'
+import type { AIReview, ScoredEvent } from '../types/protocol'
 import { EmptyState, Panel, Pill } from './Panel'
 import { VandalismAlert } from './VandalismAlert'
 
-export function VandalismPanel({ items }: { items: ScoredEvent[] }) {
+export function VandalismPanel({
+  items,
+  reviews = {},
+}: {
+  items: ScoredEvent[]
+  reviews?: Record<string, AIReview>
+}) {
   return (
     <Panel
       title="Possible vandalism"
@@ -16,7 +22,7 @@ export function VandalismPanel({ items }: { items: ScoredEvent[] }) {
       ) : (
         <ul className="-mx-1 max-h-[22rem] min-h-0 flex-1 space-y-2 overflow-y-auto px-1">
           {items.map((item) => (
-            <VandalismAlert key={item.event.id} item={item} />
+            <VandalismAlert key={item.event.id} item={item} review={reviews[item.event.id]} />
           ))}
         </ul>
       )}

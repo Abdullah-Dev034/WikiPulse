@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import { scoredEvent, snapshot, stats } from '../test/fixtures'
-import { dashboardReducer, FEED_LIMIT, initialDashboardState } from './dashboardState'
+import { pulse, scoredEvent, snapshot, stats } from '../test/fixtures'
+import { AI_REVIEW_LIMIT, dashboardReducer, FEED_LIMIT, initialDashboardState } from './dashboardState'
 
 describe('dashboardReducer', () => {
   test('snapshot replaces the whole state', () => {
@@ -55,5 +55,28 @@ describe('dashboardReducer', () => {
     expect(withStatus.stats?.edits_last_minute).toBe(42)
     expect(withStatus.wikis).toHaveLength(1)
     expect(withStatus.upstream).toBe('reconnecting')
+  })
+
+  test('pulse updates replace the summary', () => {
+    const state = dashboardReducer(initialDashboardState, {
+      type: 'pulse',
+      data: pulse({ status: 'ok', text: 'Quiet hour.', model: 'm' }),
+    })
+
+    expect(state.pulse.text).toBe('Quiet hour.')
+  })
+
+  test('AI reviews accumulate by event id, survive snapshots and stay bounded', () => {
+    const review = (id: string) => ({ event_id: id, verdict: 'unclear' as const, reason: 'r', model: 'm' })
+    let state = dashboardReducer(initialDashboardState, { type: 'ai_review', data: review('a') })
+    state = dashboardReducer(state, { type: 'snapshot', data: snapshot({ ai_reviews: [review('b')] }) })
+
+    expect(Object.keys(state.aiReviews)).toEqual(['a', 'b'])
+
+    for (let n = 0; n < AI_REVIEW_LIMIT + 5; n++) {
+      state = dashboardReducer(state, { type: 'ai_review', data: review(`x${n}`) })
+    }
+    expect(Object.keys(state.aiReviews)).toHaveLength(AI_REVIEW_LIMIT)
+    expect(state.aiReviews.a).toBeUndefined()
   })
 })

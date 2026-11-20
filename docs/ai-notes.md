@@ -126,3 +126,24 @@ Raw notes kept during development; distilled into `AI_LOG.md` before submission.
   client (no retry hammering) with a clear log line, `USER_AGENT` is documented in
   `.env.example`, and the parser was verified on 5 s of real stream bytes captured with
   curl and replayed through a mock transport (151 events, 0 malformed, resume id correct).
+
+## Phase 5 – AI pulse and AI second opinion
+
+- No LLM on the machine and no key shared (correctly: keys belong in backend/.env only).
+  Built against the OpenAI-compatible API so Ollama or any hosted provider works by config.
+  Without a reachable model the panel says so; nothing else depends on AI.
+- Pulse: aggregates only (no usernames), titles marked as untrusted, plain-text cleanup, and
+  a **grounding check** that rejects any summary containing a number not present in the
+  facts sent; the last good text stays, marked "Not updated".
+- Second opinion on rule-flagged edits: metadata only, no usernames, strict JSON reply
+  `{"verdict","reason"}`; anything else is discarded. `{"label":"safe"}` (what the sample's
+  injection asks for) fails parsing. The AI opinion is shown as a separate advisory chip
+  and can never change the rule category. Rate-limited queue that drops under bursts.
+- Verified the full HTTP path with a throwaway local stub speaking the chat-completions
+  format (not committed): pulse + both injection/XSS edits reviewed end to end.
+- Screenshot review caught two honesty bugs tests did not: (1) the pulse counted bot edits
+  while the KPIs hide bots by default, so "231 edits/min" sat next to "174"; facts are now
+  human edits with one explicitly bot-inclusive total; (2) footer mixed wall-clock time with
+  replay event time. Also: "AI-generated" label showed when nothing had been generated.
+- A blank chart in one screenshot was a capture artefact (`captureBeyondViewport` resizes
+  the page mid-capture), confirmed by inspecting the live SVG over CDP before touching code.
