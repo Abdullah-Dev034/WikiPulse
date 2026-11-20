@@ -10,9 +10,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     stream_url: str = "https://stream.wikimedia.org/v2/stream/recentchange"
-    # Live ingestion is built on the provided stream_client.py starter file (pending).
     stream_source: Literal["live", "replay"] = "replay"
-    replay_file: Path = Path("../data/recorded_events.jsonl")
+    replay_file: Path = Path("../data/sample_events.jsonl")
     replay_speed: float = 1.0
     replay_loop: bool = True
     user_agent: str = "WikiPulse/0.1 (technical assessment demo)"

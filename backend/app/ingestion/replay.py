@@ -4,6 +4,8 @@ from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from pathlib import Path
 
+from app.processing.timestamps import event_seconds
+
 MAX_REPLAY_SLEEP_SECONDS = 1.0
 
 
@@ -18,12 +20,12 @@ async def replay_events(path: Path, speed: float, loop: bool = True) -> AsyncIte
     lines = [line for line in text.splitlines() if line.strip()]
     timestamps = [_timestamp(line) for line in lines]
     known = [ts for ts in timestamps if ts is not None]
-    span = (max(known) - min(known) + 1) if known else 1
+    span = int(max(known) - min(known)) + 1 if known else 1
 
     replay_pass = 0
     while True:
         # Recorded events are slightly out of order, so pace by the furthest time reached.
-        clock: int | None = None
+        clock: float | None = None
         for line, timestamp in zip(lines, timestamps, strict=True):
             if timestamp is not None and (clock is None or timestamp > clock):
                 if speed > 0 and clock is not None:
@@ -36,21 +38,30 @@ async def replay_events(path: Path, speed: float, loop: bool = True) -> AsyncIte
         await asyncio.sleep(0)
 
 
-def _timestamp(line: str) -> int | None:
+def _timestamp(line: str) -> float | None:
     try:
-        value = json.loads(line).get("timestamp")
-    except (json.JSONDecodeError, AttributeError):
+        payload = json.loads(line)
+    except json.JSONDecodeError:
         return None
-    return value if isinstance(value, int) else None
+    return event_seconds(payload) if isinstance(payload, dict) else None
 
 
 def _shift(line: str, replay_pass: int, offset_seconds: int) -> str:
+    """Move an event forward in time and give it a new id. Timestamps are written back in
+    seconds (the source may use milliseconds). Lines that are not events pass through."""
     try:
         payload = json.loads(line)
-        meta = payload["meta"]
-        payload["timestamp"] += offset_seconds
-        meta["id"] = f"{meta['id']}~{replay_pass}"
-        meta["dt"] = datetime.fromtimestamp(payload["timestamp"], UTC).isoformat()
-    except (json.JSONDecodeError, KeyError, TypeError):
+    except json.JSONDecodeError:
         return line
+    if not isinstance(payload, dict):
+        return line
+    seconds = event_seconds(payload)
+    meta = payload.get("meta")
+    if seconds is not None:
+        shifted = int(seconds) + offset_seconds
+        payload["timestamp"] = shifted
+        if isinstance(meta, dict):
+            meta["dt"] = datetime.fromtimestamp(shifted, UTC).isoformat()
+    if isinstance(meta, dict) and isinstance(meta.get("id"), str):
+        meta["id"] = f"{meta['id']}~{replay_pass}"
     return json.dumps(payload)
