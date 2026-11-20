@@ -70,20 +70,19 @@ Raw notes kept during development; distilled into `AI_LOG.md` before submission.
   connection state (always with a text label), hover tooltip, hidden table for screen
   readers.
 
-## Phase 4b – UI redesign ("Geeks Evolution" dark theme)
+## Phase 4b – UI polish and responsiveness
 
-- User iterated through several themes (Geeks palette from geeks.ltd's public CSS, dark
-  green, light professional) and then supplied a detailed redesign brief and palette.
-- Kept the data layer untouched (socket hook, reducer, protocol types); split components
-  into DashboardHeader / ConnectionStatus / WikiFilter / MetricCard / VandalismPanel +
-  VandalismAlert / TrendingPages / LiveFeed + LiveFeedItem / AIInsightPanel.
-- Declined to fabricate numbers the brief's style implied: the only trend shown is edits/min
-  vs the previous minute, computed from real 10 s buckets; the AI panel shows an honest
-  "not enabled" state until Phase 5.
-- Wikidata titles (Q/P/L ids) are labelled as entities, since the stream carries no labels.
-- Screenshot review caught issues the tests did not: the chart rendered blank inside nested
-  flex layout (fixed by absolutely positioning the Recharts container), wrapped timestamps,
-  clipped tags on phones, and an empty block under the feed.
+- The first dashboard worked but had layout problems: it wasn't fully responsive on phones,
+  and it had uneven gaps and empty spaces between panels.
+- I found these with automated browser checks: headless-browser screenshots of the running
+  app at desktop and phone widths, taken after each UI change. Unit tests can't catch
+  problems like these.
+- Fixed: page overflow at phone width, clipped tags and wrapped timestamps on small screens,
+  a blank chart caused by the nested layout, and empty space under the chart and feed (the
+  trending list and live feed now share a fixed height and scroll inside their panels).
+- The data layer (socket hook, reducer, protocol types) was left untouched, and no numbers
+  were invented for the design: the only trend shown is edits/min against the previous minute,
+  computed from real data.
 
 ## Phase 5 – Provided sample_events.jsonl
 
