@@ -66,7 +66,7 @@ Raw notes kept during development; distilled into `AI_LOG.md` before submission.
 - Observation: replay looping re-plays the same editors ~90 s later, which trips the
   "rapid repeated edits" signal more than live traffic does (single pass: 4 of 1,476 edits
   flagged). Replay artefact, documented rather than tuned away.
-- Charts follow a dataviz checklist: one blue for data, status colours only for risk and
+- Charts follow a dataviz checklist: one series colour for data, status colours only for risk and
   connection state (always with a text label), hover tooltip, hidden table for screen
   readers.
 
