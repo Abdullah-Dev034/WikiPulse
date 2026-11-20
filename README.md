@@ -29,6 +29,17 @@ npm run dev
 Open http://localhost:5173. With the default settings, the dashboard replays the provided
 `sample_events.jsonl` in real time and loops it.
 
+### Docker (backend)
+
+```bash
+docker build -t wikipulse-api .
+docker run -p 7860:7860 wikipulse-api        # add -e STREAM_SOURCE=live -e USER_AGENT=... etc.
+```
+
+The same image runs the hosted demo on a Hugging Face Space (`sh deploy/hf-space/build.sh <dir>`
+assembles the Space repo). The frontend is a static build on Vercel with
+`VITE_WS_URL=wss://<space>.hf.space/ws`.
+
 ### Data source
 
 | Setting | Effect |

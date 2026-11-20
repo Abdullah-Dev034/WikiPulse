@@ -1,0 +1,14 @@
+# Only the backend and the sample data go into the image; never secrets or local data.
+**/.env
+**/.env.*
+!**/.env.example
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+frontend
+docs
+data/recorded_*.jsonl
+*.pdf
+assessment.txt
+.git
