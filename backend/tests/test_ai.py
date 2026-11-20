@@ -283,3 +283,24 @@ def test_pipeline_attaches_reviews_to_flagged_snapshot_without_changing_risk() -
 
     assert snapshot.flagged[0].risk.category is RiskCategory.NEEDS_REVIEW
     assert snapshot.ai_reviews[0].verdict == "likely_fine"
+
+
+async def test_client_falls_back_when_json_mode_is_rejected() -> None:
+    seen: list[dict] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        seen.append(body)
+        if "response_format" in body:
+            return httpx.Response(400, json={"message": "response_format not supported"})
+        return httpx.Response(200, json={"choices": [{"message": {"content": "{}"}}]})
+
+    model = OpenAICompatibleModel(
+        "http://llm.test/v1", "m", SecretStr(""), transport=httpx.MockTransport(handler)
+    )
+
+    assert await model.complete("s", "u", max_tokens=5, json_mode=True) == "{}"
+    assert await model.complete("s", "u", max_tokens=5, json_mode=True) == "{}"
+    # One rejected attempt, then JSON mode is remembered as unsupported.
+    assert ["response_format" in body for body in seen] == [True, False, False]
+    await model.aclose()
