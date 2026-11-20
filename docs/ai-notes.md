@@ -147,3 +147,17 @@ Raw notes kept during development; distilled into `AI_LOG.md` before submission.
   replay event time. Also: "AI-generated" label showed when nothing had been generated.
 - A blank chart in one screenshot was a capture artefact (`captureBeyondViewport` resizes
   the page mid-capture), confirmed by inspecting the live SVG over CDP before touching code.
+
+## Phase 8 – Deployment and optional extras
+
+- Vercel cannot run the backend (no long-lived processes or WebSocket servers), so the
+  frontend is on Vercel and the backend needs a container host. Render asked for a card even
+  on the free plan; the Hugging Face account had a CPU quota of 0. Documented honestly; demos
+  use a local backend behind a Cloudflare quick tunnel.
+- Docker image tested locally before pushing anywhere: non-root user, no `.env` in the image,
+  WebSocket works through it. docker-compose adds nginx proxying `/ws`, so no build-time URL.
+- Selenium + C# E2E test (the stack Geeks named). **Wrong (Claude) twice:** first version held
+  an element reference across a React re-render (stale element); second compared against
+  "Rule-based signals" while Selenium returns CSS-uppercased rendered text. Both fixed;
+  passes repeatedly against the compose stack.
+- Go ingestion service deliberately not built; reasoning in the README.

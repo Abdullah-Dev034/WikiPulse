@@ -29,7 +29,17 @@ npm run dev
 Open http://localhost:5173. With the default settings, the dashboard replays the provided
 `sample_events.jsonl` in real time and loops it.
 
-### Docker (backend)
+### Docker (whole app)
+
+```bash
+docker compose up --build        # http://localhost:8080
+```
+
+nginx serves the frontend build and proxies `/ws` and `/api` to the backend. The backend reads
+`backend/.env` if it exists; otherwise it replays the sample. `REPLAY_SPEED=20 docker compose up`
+speeds up the replay.
+
+To run only the backend image:
 
 ```bash
 docker build -t wikipulse-api .
@@ -195,6 +205,39 @@ attack edits flagged. Nothing else is flagged.
 - Dashboard rendering of every panel and AI state.
 - Markup in edit data rendered as text.
 
+**End-to-end (Selenium, C#):** [e2e/WikiPulse.E2E/DashboardTest.cs](e2e/WikiPulse.E2E/DashboardTest.cs)
+drives a real headless browser against the running stack. It checks that:
+- the WebSocket connects and data arrives;
+- the feed and trending pages fill;
+- choosing `fr.wikipedia.org` leaves only fr.wikipedia edits in the feed;
+- a flagged edit expands to show its rule-based reasons.
+
+```bash
+REPLAY_SPEED=20 docker compose up -d --build
+cd e2e/WikiPulse.E2E && dotnet test          # E2E_BROWSER=chrome to use Chrome instead of Edge
+```
+
+I chose Selenium with C# because it's the stack Geeks named. Selenium Manager downloads the
+browser driver itself, so the test needs only the .NET SDK and a browser. It runs against the
+Docker stack in replay mode, so the data is deterministic and no network or API key is needed.
+Waits poll the page instead of sleeping, and re-find elements that React re-renders, because
+stale elements and fixed sleeps are the usual causes of flaky Selenium tests.
+
+## Optional extras
+
+| Extra | Status |
+| --- | --- |
+| Docker / docker-compose | Done (see above) |
+| One end-to-end UI test | Done: Selenium + C# |
+| Deployed live demo | Frontend deployed on Vercel. The backend image is ready, but the free hosts I tried needed a card or had no CPU quota, so for demos the backend runs locally behind a Cloudflare tunnel |
+| Ingestion in a Go service | Not done, by choice (see below) |
+
+**Why no Go service.** Ingestion is I/O-bound. One asyncio task handles the live stream
+(~1,000 events/min) with reconnect and `Last-Event-ID` resume. A separate Go service would add
+a network hop, a second language and another deployment without removing a real bottleneck.
+I'd split it out if ingestion had to scale independently or feed several consumers. Then a
+small Go service publishing to a queue (Redis Streams or NATS) would be the natural shape.
+
 ## Known limitations
 
 - **Live mode needs a policy-compliant `USER_AGENT`.** I parsed 5 seconds of real stream bytes
@@ -213,7 +256,7 @@ attack edits flagged. Nothing else is flagged.
   just metadata. Also use ORES/Lift Wing scores where a wiki has them.
 - Evaluate the AI on a labelled set of real reverted and non-reverted edits before trusting its
   verdicts.
-- docker-compose, a Playwright end-to-end test of the live dashboard, and a deployed demo.
+- A permanently hosted backend (a paid container host, or a free tier that accepts this account).
 - Persist aggregates (Redis or Postgres) for history beyond 5 minutes and multiple backend
   instances.
 - Per-wiki baselines, so "trending" means unusual for that wiki rather than simply large.
