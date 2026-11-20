@@ -1,4 +1,4 @@
-# Backend image (also used for the Hugging Face Space). Build from the repository root:
+# Backend image. Build from the repository root:
 #   docker build -t wikipulse-api .
 #   docker run -p 7860:7860 wikipulse-api
 FROM python:3.12-slim
