@@ -161,3 +161,16 @@ Raw notes kept during development; distilled into `AI_LOG.md` before submission.
   "Rule-based signals" while Selenium returns CSS-uppercased rendered text. Both fixed;
   passes repeatedly against the compose stack.
 - Go ingestion service deliberately not built; reasoning in the README.
+
+## Phase 9 – Real model (Databricks)
+
+- No key came with the brief, so used Databricks Model Serving (OpenAI-compatible) with
+  Llama 3.3 70B. Setup issues were credentials, not code: first token was for another
+  workspace ("Invalid access token"), the next lacked the `model-serving` scope. Diagnosed
+  from Databricks' error messages without ever printing the token.
+- Pulse worked first time with real output: 3/3 summaries grounded, no invented numbers.
+- Reviews failed with HTTP 400: this endpoint rejects `response_format`. Predicted earlier
+  as a risk. The client now retries once without JSON mode and remembers it; the prompt and
+  strict parser already enforce the shape. Test added.
+- Real results: injection edit -> likely_vandalism ("summary contains instructions"), XSS
+  edit -> likely_vandalism, no-summary edit -> unclear. The model did not obey the override.
