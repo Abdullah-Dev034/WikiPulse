@@ -44,7 +44,11 @@ class FakeWebSocket:
 
 def empty_snapshot(event_filter: EventFilter) -> Snapshot:
     return Snapshot(
-        stats=build_stats(EventStore(), event_filter), wikis=[], feed=[], upstream="replay"
+        stats=build_stats(EventStore(), event_filter),
+        wikis=[],
+        feed=[],
+        flagged=[],
+        upstream="replay",
     )
 
 

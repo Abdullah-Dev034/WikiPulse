@@ -1,4 +1,6 @@
-# Secrets
+# Repo-wide rules only. Project rules live in backend/.gitignore and frontend/.gitignore.
+
+# Secrets (safety net for any .env outside the two projects)
 .env
 .env.*
 !.env.example
@@ -6,17 +8,6 @@
 # Assessment brief (private to the hiring process, not part of the deliverable)
 Technical Assessment*.pdf
 assessment.txt
-
-# Python
-__pycache__/
-*.py[cod]
-.venv/
-.pytest_cache/
-.ruff_cache/
-
-# Node
-node_modules/
-dist/
 
 # Editors / OS
 .vscode/

@@ -51,3 +51,36 @@ Raw notes kept during development; distilled into `AI_LOG.md` before submission.
   timestamp reached; regression test added.
 - Added a "hide bots" filter alongside the wiki filter (Claude recommended it; user to confirm), since 39% of live
   edits are bots and they dominate the top-10.
+
+## Phase 4 – React dashboard (Claude Code)
+
+- Typed WebSocket contract mirrored in `frontend/src/types/protocol.ts`; pure reducer
+  (snapshot replaces, events dedupe by id and cap at 100, flagged edits kept separately);
+  `useDashboardSocket` keeps one socket and re-subscribes on filter change.
+- Frontend tests first failed with "multiple elements found": Testing Library only
+  auto-cleans between tests when Vitest globals are on, which Claude had turned off in
+  Phase 0. Added explicit `afterEach(cleanup)`.
+- Checked the real page in headless Edge (screenshots), not just tests. That found a layout
+  bug the tests could not: at phone width, long unbroken edit comments stretched the grid
+  past the screen. Fixed with `grid-cols-1` + `min-w-0`.
+- Observation: replay looping re-plays the same editors ~90 s later, which trips the
+  "rapid repeated edits" signal more than live traffic does (single pass: 4 of 1,476 edits
+  flagged). Replay artefact, documented rather than tuned away.
+- Charts follow a dataviz checklist: one blue for data, status colours only for risk and
+  connection state (always with a text label), hover tooltip, hidden table for screen
+  readers.
+
+## Phase 4b – UI redesign ("Geeks Evolution" dark theme)
+
+- User iterated through several themes (Geeks palette from geeks.ltd's public CSS, dark
+  green, light professional) and then supplied a detailed redesign brief and palette.
+- Kept the data layer untouched (socket hook, reducer, protocol types); split components
+  into DashboardHeader / ConnectionStatus / WikiFilter / MetricCard / VandalismPanel +
+  VandalismAlert / TrendingPages / LiveFeed + LiveFeedItem / AIInsightPanel.
+- Declined to fabricate numbers the brief's style implied: the only trend shown is edits/min
+  vs the previous minute, computed from real 10 s buckets; the AI panel shows an honest
+  "not enabled" state until Phase 5.
+- Wikidata titles (Q/P/L ids) are labelled as entities, since the stream carries no labels.
+- Screenshot review caught issues the tests did not: the chart rendered blank inside nested
+  flex layout (fixed by absolutely positioning the Recharts container), wrapped timestamps,
+  clipped tags on phones, and an empty block under the feed.

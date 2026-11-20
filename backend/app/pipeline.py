@@ -13,6 +13,7 @@ from app.realtime.protocol import Snapshot, StatsPayload, UpstreamState
 logger = logging.getLogger(__name__)
 
 FEED_SIZE = 100
+FLAGGED_SIZE = 20
 MAX_PENDING_EVENTS = 500
 
 
@@ -35,6 +36,7 @@ class Pipeline:
             stats=payload.stats,
             wikis=payload.wikis,
             feed=self.store.latest(FEED_SIZE, event_filter),
+            flagged=self.store.latest(FLAGGED_SIZE, event_filter, flagged_only=True),
             upstream=self.upstream,
         )
 
