@@ -36,9 +36,13 @@ docker build -t wikipulse-api .
 docker run -p 7860:7860 wikipulse-api        # add -e STREAM_SOURCE=live -e USER_AGENT=... etc.
 ```
 
-The same image runs the hosted demo on a Hugging Face Space (`sh deploy/hf-space/build.sh <dir>`
-assembles the Space repo). The frontend is a static build on Vercel with
-`VITE_WS_URL=wss://<space>.hf.space/ws`.
+The frontend is a static build on Vercel; set `VITE_WS_URL=wss://<backend-host>/ws` at build
+time. The backend needs a host that keeps a process running (WebSockets, a long-lived stream
+connection, in-memory state), which serverless platforms such as Vercel don't provide. The image
+is ready for container hosts such as Hugging Face Spaces (`sh deploy/hf-space/build.sh <dir>`
+assembles the Space repo), Render or Fly.io. The free tiers I tried needed a payment card or
+had no CPU quota, so for demos the backend runs locally behind a Cloudflare quick tunnel
+(`cloudflared tunnel --url http://localhost:8000`).
 
 ### Data source
 
