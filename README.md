@@ -79,9 +79,9 @@ AI works with any OpenAI-compatible chat-completions endpoint. Configure it in `
 LLM_BASE_URL=http://localhost:11434/v1
 LLM_MODEL=llama3.2:3b
 
-# Or a hosted provider, e.g. the key provided for this assignment
-LLM_BASE_URL=https://api.openai.com/v1
-LLM_MODEL=<model name>
+# Or a hosted provider. No key came with the brief; I used Databricks Model Serving:
+LLM_BASE_URL=https://<workspace>.cloud.databricks.com/serving-endpoints
+LLM_MODEL=databricks-meta-llama-3-3-70b-instruct
 LLM_API_KEY=<your key>      # .env is gitignored; never commit it
 ```
 
@@ -243,8 +243,9 @@ small Go service publishing to a queue (Redis Streams or NATS) would be the natu
 - **Live mode needs a policy-compliant `USER_AGENT`.** I parsed 5 seconds of real stream bytes
   through the client (151 events, 0 errors), but haven't run it for long periods against the
   live stream.
-- **AI was tested with a fake model and a local stub only.** The quality of real model output
-  is untested here.
+- **AI quality was spot-checked, not evaluated.** It was tested end to end with Llama 3.3 70B on
+  Databricks: grounded summaries, and both attack edits judged `likely_vandalism` without obeying
+  the injected instruction. There's no labelled evaluation set yet.
 - **Replay loops re-play the same editors.** This triggers the "rapid edits" rule more often
   than live traffic does.
 - **Everything lives in memory.** Restarting the backend loses the window, and the backend
