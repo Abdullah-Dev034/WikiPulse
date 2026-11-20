@@ -10,7 +10,7 @@
 
 The rough, phase-by-phase notes behind this log are in [docs/ai-notes.md](docs/ai-notes.md).
 
-## How I worked: human-directed, AI-assisted
+## How I worked: AI Native Full Stack Engineer
 
 I owned the direction and the decisions. The AI tools drafted and executed.
 
@@ -155,8 +155,6 @@ by running the real system end to end.
   pushing, the git history was scanned for secrets, and a file of real stream data containing
   real editors' usernames was removed from history. When the live stream required a
   User-Agent with contact details, the AI stopped and asked rather than use my details.
-- **Talking to Geeks.** I decided to ask for the missing starter files and sent the email
-  myself; the AI helped draft the wording.
 - **Product decisions.** These were mine:
   - Scope and priorities, and what to leave out (including the optional Go service).
   - Hiding bots by default. The AI recommended it with live numbers; I made the call.
