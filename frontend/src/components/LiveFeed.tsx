@@ -1,4 +1,4 @@
-// Interim live feed. To be reconciled with the provided LiveFeed.tsx starter once received.
+// Own implementation: the brief's LiveFeed.tsx starter was never provided (see README).
 import type { ScoredEvent } from '../types/protocol'
 import { LiveFeedItem } from './LiveFeedItem'
 import { EmptyState, Panel, Pill } from './Panel'
