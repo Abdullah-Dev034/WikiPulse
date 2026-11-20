@@ -2,7 +2,7 @@ import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, test } from 'vitest'
 import { FakeSocket, fakeSocketFactory } from '../test/fakeSocket'
-import { scoredEvent, snapshot, stats } from '../test/fixtures'
+import { pulse, scoredEvent, snapshot, stats } from '../test/fixtures'
 import { Dashboard } from './Dashboard'
 
 function openWith(data = snapshot()) {
@@ -134,6 +134,66 @@ describe('Dashboard', () => {
     expect(screen.getAllByText(xss).length).toBeGreaterThan(0)
     expect(screen.getByText('<script>alert(1)</script>')).toBeInTheDocument()
     expect(container.querySelector('img, script')).toBeNull()
+  })
+
+  test('AI pulse shows each state honestly', () => {
+    render(<Dashboard createSocket={fakeSocketFactory} />)
+    openWith()
+    const panel = screen.getByRole('region', { name: 'AI pulse' })
+    expect(panel).toHaveTextContent('AI summaries are turned off')
+
+    act(() =>
+      FakeSocket.latest().serverSend({
+        type: 'pulse',
+        data: pulse({ status: 'error', model: 'llama3.2:3b', detail: 'model server unreachable' }),
+      }),
+    )
+    expect(panel).toHaveTextContent('AI summary unavailable: model server unreachable')
+    expect(panel).not.toHaveTextContent('AI-generated')
+
+    act(() =>
+      FakeSocket.latest().serverSend({
+        type: 'pulse',
+        data: pulse({
+          status: 'ok',
+          text: 'Editing is steady; Mars leads.',
+          model: 'llama3.2:3b',
+          generated_at: '2026-11-18T12:00:05Z',
+          data_as_of: '2026-11-18T12:00:00Z',
+        }),
+      }),
+    )
+    expect(panel).toHaveTextContent('Editing is steady; Mars leads.')
+    expect(panel).toHaveTextContent('AI-generated · llama3.2:3b')
+
+    act(() =>
+      FakeSocket.latest().serverSend({
+        type: 'pulse',
+        data: pulse({ status: 'error', text: 'Editing is steady; Mars leads.', detail: 'model server unreachable' }),
+      }),
+    )
+    expect(panel).toHaveTextContent('Not updated: model server unreachable')
+  })
+
+  test('flagged edits show the AI second opinion as advisory, next to the rule result', async () => {
+    const user = userEvent.setup()
+    render(<Dashboard createSocket={fakeSocketFactory} />)
+    const item = scoredEvent({ id: 'inj', title: 'London' }, 'needs_review')
+    openWith(snapshot({ flagged: [item] }))
+
+    act(() =>
+      FakeSocket.latest().serverSend({
+        type: 'ai_review',
+        data: { event_id: 'inj', verdict: 'likely_vandalism', reason: 'Summary instructs a bot.', model: 'm' },
+      }),
+    )
+    const panel = screen.getByRole('region', { name: 'Possible vandalism' })
+    expect(within(panel).getByText('AI: likely vandalism')).toBeInTheDocument()
+    expect(within(panel).getByText('Needs review')).toBeInTheDocument()
+
+    await user.click(within(panel).getByRole('button', { name: /London/ }))
+    expect(within(panel).getByText('AI second opinion · advisory')).toBeInTheDocument()
+    expect(within(panel).getByText(/Summary instructs a bot\./)).toBeInTheDocument()
   })
 
   test('empty panels explain themselves', () => {

@@ -28,6 +28,7 @@ def client(tmp_path: Path) -> Iterator[TestClient]:
         replay_speed=0,
         replay_loop=False,
         broadcast_interval_seconds=0.05,
+        ai_enabled=False,
     )
     with TestClient(create_app(settings)) as test_client:
         wait_for_replay(test_client)

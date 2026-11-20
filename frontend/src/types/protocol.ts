@@ -72,12 +72,34 @@ export interface DashboardStats {
   activity: ActivityPoint[]
 }
 
+export type PulseStatus = 'disabled' | 'pending' | 'ok' | 'error'
+export type Verdict = 'likely_vandalism' | 'unclear' | 'likely_fine'
+
+export interface PulseSummary {
+  status: PulseStatus
+  text: string | null
+  generated_at: string | null
+  data_as_of: string | null
+  model: string | null
+  detail: string | null
+}
+
+/** Advisory LLM opinion on a rule-flagged edit; never changes the rule-based category. */
+export interface AIReview {
+  event_id: string
+  verdict: Verdict
+  reason: string
+  model: string
+}
+
 export interface Snapshot {
   stats: DashboardStats
   wikis: WikiCount[]
   feed: ScoredEvent[]
   flagged: ScoredEvent[]
   upstream: UpstreamState
+  pulse: PulseSummary
+  ai_reviews: AIReview[]
 }
 
 export type ServerMessage =
@@ -85,6 +107,8 @@ export type ServerMessage =
   | { type: 'events'; data: ScoredEvent[] }
   | { type: 'stats'; data: { stats: DashboardStats; wikis: WikiCount[] } }
   | { type: 'status'; data: { state: UpstreamState } }
+  | { type: 'pulse'; data: PulseSummary }
+  | { type: 'ai_review'; data: AIReview }
 
 export interface SubscribeMessage {
   type: 'subscribe'
@@ -92,7 +116,14 @@ export interface SubscribeMessage {
   include_bots: boolean
 }
 
-const SERVER_MESSAGE_TYPES = new Set(['snapshot', 'events', 'stats', 'status'])
+const SERVER_MESSAGE_TYPES = new Set([
+  'snapshot',
+  'events',
+  'stats',
+  'status',
+  'pulse',
+  'ai_review',
+])
 
 export function parseServerMessage(raw: string): ServerMessage | null {
   try {

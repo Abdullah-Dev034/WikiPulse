@@ -1,5 +1,6 @@
 import type {
   DashboardStats,
+  PulseSummary,
   RiskCategory,
   ScoredEvent,
   Snapshot,
@@ -59,5 +60,26 @@ export function stats(overrides: Partial<DashboardStats> = {}): DashboardStats {
 }
 
 export function snapshot(overrides: Partial<Snapshot> = {}): Snapshot {
-  return { stats: stats(), wikis: [], feed: [], flagged: [], upstream: 'replay', ...overrides }
+  return {
+    stats: stats(),
+    wikis: [],
+    feed: [],
+    flagged: [],
+    upstream: 'replay',
+    pulse: pulse(),
+    ai_reviews: [],
+    ...overrides,
+  }
+}
+
+export function pulse(overrides: Partial<PulseSummary> = {}): PulseSummary {
+  return {
+    status: 'disabled',
+    text: null,
+    generated_at: null,
+    data_as_of: null,
+    model: null,
+    detail: null,
+    ...overrides,
+  }
 }

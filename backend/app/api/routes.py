@@ -23,6 +23,8 @@ async def health(request: Request) -> dict[str, Any]:
         "upstream": pipeline.upstream,
         "clients": pipeline.hub.client_count,
         "events_in_window": len(pipeline.store),
+        "ai_pulse": pipeline.pulse.status,
+        "ai_reviews": len(pipeline.ai_reviews),
         "processor": asdict(pipeline.processor.counters),
     }
 

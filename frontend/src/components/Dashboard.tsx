@@ -45,13 +45,13 @@ export function Dashboard({ createSocket }: { createSocket?: SocketFactory }) {
         ) : (
           <>
             <MetricsRow stats={stats} />
-            <AIInsightPanel />
+            <AIInsightPanel pulse={state.pulse} />
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
               <div className="min-w-0 lg:col-span-2">
                 <ActivityChart activity={stats.activity} />
               </div>
               <div className="min-w-0">
-                <VandalismPanel items={state.flagged} />
+                <VandalismPanel items={state.flagged} reviews={state.aiReviews} />
               </div>
             </div>
             <div className="grid grid-cols-1 gap-4 lg:h-[36rem] lg:grid-cols-3">

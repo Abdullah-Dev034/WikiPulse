@@ -4,7 +4,7 @@ import logging
 from collections.abc import Callable
 
 from fastapi import WebSocket
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from starlette.websockets import WebSocketDisconnect
 
 from app.models import EventFilter, ScoredEvent
@@ -100,9 +100,13 @@ class Hub:
                 client.offer(message)
 
     def broadcast_status(self, state: UpstreamState) -> None:
-        message = StatusMessage(data=UpstreamStatus(state=state)).model_dump_json()
+        self.broadcast_message(StatusMessage(data=UpstreamStatus(state=state)))
+
+    def broadcast_message(self, message: BaseModel) -> None:
+        """Send one message, the same for every filter, to all clients."""
+        rendered = message.model_dump_json()
         for client in list(self._clients):
-            client.offer(message)
+            client.offer(rendered)
 
     def _render(
         self,
