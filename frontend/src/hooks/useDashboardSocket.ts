@@ -17,6 +17,9 @@ export const MAX_RETRY_MS = 15_000
 const browserSocket: SocketFactory = (url) => new WebSocket(url)
 
 export function defaultSocketUrl(): string {
+  // Set at build time when the backend is on another host (e.g. Vercel + Render).
+  const configured = import.meta.env.VITE_WS_URL as string | undefined
+  if (configured) return configured
   const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws'
   return `${scheme}://${window.location.host}/ws`
 }

@@ -41,9 +41,9 @@ details. Wikimedia's [User-Agent policy](https://w.wiki/4wJS) requires this. Wit
 stream answers Python clients with **HTTP 403**. The client then stops and logs why, instead of
 retrying.
 
-`data/recorded_events.jsonl` is 90 seconds of real stream traffic I recorded while waiting for
-the sample file. It is useful for seeing realistic volume offline, for example
-`REPLAY_FILE=../data/recorded_events.jsonl`.
+While waiting for the sample file I also recorded 90 seconds of the real stream. It isn't in the
+repository because it contains real editors' usernames and temporary-account IDs.
+`data/recorded_*.jsonl` is gitignored, so you can record your own for realistic offline volume.
 
 ### AI (optional)
 
