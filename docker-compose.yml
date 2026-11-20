@@ -1,0 +1,23 @@
+# Whole app with one command:  docker compose up --build   ->  http://localhost:8080
+# Reads backend/.env if present (live mode, USER_AGENT, LLM_*); otherwise replays the sample.
+services:
+  backend:
+    build: .
+    env_file:
+      - path: backend/.env
+        required: false
+    environment:
+      REPLAY_SPEED: ${REPLAY_SPEED:-1}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:7860/api/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
