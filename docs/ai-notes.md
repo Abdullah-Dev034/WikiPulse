@@ -36,3 +36,18 @@ Raw notes kept during development; distilled into `AI_LOG.md` before submission.
 - Live check, 60 s of real stream: ~930 edits/min, 63 wikis, 39% bot edits, 35% Wikidata.
   1 of 932 edits flagged (needs review). Top pages are dominated by Wikidata Q-ids, which
   matters for the dashboard's default view (decision pending).
+
+## Phase 3 – WebSocket broadcasting and replay (Claude Code)
+
+- Recorded 90 s of the live stream (`data/recorded_events.jsonl`, 2,589 events) as offline
+  data until the provided `sample_events.jsonl` arrives.
+- The WebSocket integration test caught a real race in Claude's first design: events that
+  arrived just before a browser connected were in its snapshot *and* in the next events
+  broadcast. Fixed by flushing pending events to existing clients before building a
+  snapshot, and registering the new client only after its snapshot is queued.
+- **Wrong (Claude):** first replay pacing slept on every forward timestamp step. Real
+  recordings are slightly out of order (t, t+1, t, t+1 ...), so replay ran ~6x too slow.
+  Found by running the server end to end, not by unit tests. Fixed by pacing on the furthest
+  timestamp reached; regression test added.
+- Added a "hide bots" filter alongside the wiki filter (Claude recommended it; user to confirm), since 39% of live
+  edits are bots and they dominate the top-10.
