@@ -83,6 +83,15 @@ Raw notes kept during development; distilled into `AI_LOG.md` before submission.
 - The data layer (socket hook, reducer, protocol types) was left untouched, and no numbers
   were invented for the design: the only trend shown is edits/min against the previous minute,
   computed from real data.
+- Structured the frontend to scale. All connection logic lives in one custom hook,
+  `useDashboardSocket` (one WebSocket, reconnect with backoff, filter changes). The socket is
+  injectable, so tests use a fake one. State changes go through a pure `dashboardReducer` that
+  is tested on its own. The UI is built from small reusable components: `Panel` (with
+  `EmptyState` and `Pill`) frames every section, `MetricCard` renders each KPI, `RiskBadge` is
+  shared by the live feed and the vandalism alerts, and `LiveFeedItem` is memoised so a new edit
+  doesn't re-render the whole list. Formatting and labelling live in plain helper modules
+  (`lib/format`, `lib/pages`). A new panel is one small component that plugs into the existing
+  state, with no new connection logic.
 
 ## Phase 5 – Provided sample_events.jsonl
 
