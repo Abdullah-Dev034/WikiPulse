@@ -7,7 +7,7 @@ of what is trending.
 
 - **Backend:** Python 3.12, FastAPI, asyncio, httpx, pydantic
 - **Frontend:** React 19, TypeScript (strict), Vite, Tailwind v4, Recharts
-- **Tests:** pytest (108 tests), Vitest + Testing Library (31 tests)
+- **Tests:** pytest (109 tests), Vitest + Testing Library (31 tests), Selenium + C# (1 end-to-end test)
 
 ## Run it
 

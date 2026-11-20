@@ -12,3 +12,6 @@ data/recorded_*.jsonl
 *.pdf
 assessment.txt
 .git
+
+# Tests are not needed at runtime.
+backend/tests
